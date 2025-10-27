@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>• Students — Student Information System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F9FAFB;--panel:#FFFFFF;--text:#111827;--muted:#6B7280;--primary:#2563EB;--secondary:#10B981;--r:14px}
+html.dark{--bg:#0F172A;--panel:#111827;--text:#F3F4F6;--muted:#9CA3AF;--primary:#3B82F6;--secondary:#34D399}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+.header{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;background:rgba(255,255,255,.6);backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(0,0,0,.06)}
+html.dark .header{background:rgba(17,24,39,.6);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.brand{font-weight:800;font-size:18px;color:var(--primary)}
+.controls{display:flex;gap:8px;align-items:center}
+.tbtn{padding:8px 12px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;cursor:pointer}
+html.dark .tbtn{background:#0b1220;border-color:#1f2937;color:var(--text)}
+.container{max-width:1100px;margin:20px auto;padding:0 16px}
+.card{background:var(--panel);border-radius:14px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+html.dark .card{background:rgba(17,24,39,.6);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.input{padding:10px 12px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;min-width:160px}
+html.dark .input{background:#07101a;border-color:#1f2937;color:var(--text)}
+.btn{padding:10px 12px;border-radius:10px;border:0;font-weight:700;cursor:pointer}
+.btn-primary{background:linear-gradient(90deg,var(--primary),var(--secondary));color:#fff}
+.table-wrap{overflow:auto;border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid rgba(0,0,0,.06)}
+html.dark th,html.dark td{border-bottom:1px solid rgba(255,255,255,.04)}
+th{font-weight:700;color:var(--muted);font-size:13px}
+.actions button{margin-right:6px}
+.small{font-size:13px;color:var(--muted)}
+.notice{padding:8px;border-radius:8px;background:rgba(37,99,235,.06);color:var(--primary);margin-bottom:12px}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#f3f4f6;font-weight:700}
+html.dark .badge{background:#0b142b}
+.modal{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:1000}
+.modal .dialog{width:100%;max-width:640px;background:var(--panel);padding:18px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+html.dark .modal .dialog{background:rgba(17,24,39,.95)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:720px){.form-grid{grid-template-columns:1fr}}
+.form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.label{font-weight:600;font-size:13px}
+.input-full{padding:10px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;width:100%}
+html.dark .input-full{background:#07101a;border-color:#1f2937;color:var(--text)}
+.footer-row{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.icon-btn{background:transparent;border:0;cursor:pointer;font-size:18px}
+.empty{padding:20px;text-align:center;color:var(--muted)}
+.csv-btn{background:#111827;color:#fff;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+.search-info{color:var(--muted);font-size:13px;margin-left:6px}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">Smart Campus • Student Management</div>
+  <div class="controls">
+    <div class="small" id="userInfo">—</div>
+    <button class="tbtn" id="themeBtn" title="Toggle theme">🌗</button>
+    <a class="tbtn" href="dashboard.html">← Dashboard</a>
+    <button class="tbtn" id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div>
+        <h2 style="margin:0 0 6px">Students</h2>
+        <div class="small">Manage student records (Create, Read, Update, Delete)</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" id="addBtn">+ Add Student</button>
+        <button class="tbtn" id="seedBtn" title="Seed sample data">Seed sample</button>
+        <button class="csv-btn" id="exportCsv">Export CSV</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px" class="toolbar">
+      <input class="input" id="searchInput" placeholder="Search by name, roll, email...">
+      <select class="input" id="deptFilter">
+        <option value="">All Departments</option>
+        <option>CSE</option><option>ECE</option><option>ME</option><option>CE</option><option>EEE</option><option>IT</option>
+      </select>
+      <select class="input" id="sortBy">
+        <option value="name">Sort: Name ▲</option>
+        <option value="roll">Sort: Roll ▲</option>
+        <option value="year">Sort: Year ▲</option>
+      </select>
+      <div class="search-info" id="countInfo"></div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:8px">
+      <table id="studentsTable" aria-live="polite">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Roll No.</th>
+            <th>Department</th>
+            <th>Email</th>
+            <th>Year</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <!-- rows injected -->
+        </tbody>
+      </table>
+      <div id="emptyState" class="empty" style="display:none">No students — add the first record.</div>
+    </div>
+  </section>
+</main>
+
+<!-- Add / Edit Modal -->
+<div class="modal" id="modal">
+  <div class="dialog">
+    <h3 id="modalTitle">Add Student</h3>
+    <form id="studentForm">
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="label">Full name</label>
+          <input class="input-full" id="s_name" required>
+        </div>
+        <div class="form-row">
+          <label class="label">Roll number</label>
+          <input class="input-full" id="s_roll" required>
+        </div>
+        <div class="form-row">
+          <label class="label">Department</label>
+          <select class="input-full" id="s_dept">
+            <option>CSE</option><option>ECE</option><option>ME</option><option>CE</option><option>EEE</option><option>IT</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="label">Email</label>
+          <input class="input-full" id="s_email" type="email" required>
+        </div>
+        <div class="form-row">
+          <label class="label">Phone</label>
+          <input class="input-full" id="s_phone" placeholder="+91 9xxxxxxxx">
+        </div>
+        <div class="form-row">
+          <label class="label">Graduation Year</label>
+          <input class="input-full" id="s_year" type="number" min="2000" max="2099" value="2025">
+        </div>
+      </div>
+
+      <div class="footer-row">
+        <button type="button" class="tbtn" id="cancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="saveBtn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// ---------- Auth guard & user info ----------
+if(localStorage.getItem('isLoggedIn')!=='true'){
+  // Not logged in — redirect to login
+  location.href = 'login.html';
+}
+const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+document.getElementById('userInfo').textContent = currentUser.name ? `${currentUser.name} • ${currentUser.role}` : 'Signed in';
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  localStorage.removeItem('isLoggedIn');
+  localStorage.removeItem('currentUser');
+  location.href = 'login.html';
+});
+
+// Theme handling
+const themeBtn = document.getElementById('themeBtn');
+function applyTheme(){
+  if(localStorage.getItem('theme') === 'dark'){ document.documentElement.classList.add('dark'); }
+  else { document.documentElement.classList.remove('dark'); }
+}
+themeBtn.addEventListener('click', ()=>{
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+});
+applyTheme();
+
+// ---------- Data layer ----------
+const LS_KEY = 'students';
+let students = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+
+function seedSample(){
+  const sample = [
+    {id: genId(), name:'Asha Reddy', roll:'BS2101', dept:'CSE', email:'asha@uni.edu', phone:'+91 98765 00001', year:2025},
+    {id: genId(), name:'Rahul Kumar', roll:'BS2102', dept:'ECE', email:'rahul@uni.edu', phone:'+91 98765 00002', year:2025},
+    {id: genId(), name:'Sana Priya', roll:'BS2103', dept:'ME', email:'sana@uni.edu', phone:'+91 98765 00003', year:2024},
+  ];
+  students = sample;
+  saveAndRender();
+}
+
+// initialize if null
+if(!students){ seedSample(); }
+
+// save helper
+function saveAndRender(){
+  localStorage.setItem(LS_KEY, JSON.stringify(students));
+  renderTable();
+}
+
+// id generator
+function genId(){ return 's_' + Math.random().toString(36).slice(2,9); }
+
+// ---------- UI & event wiring ----------
+const tbody = document.getElementById('tbody');
+const emptyState = document.getElementById('emptyState');
+
+const searchInput = document.getElementById('searchInput');
+const deptFilter = document.getElementById('deptFilter');
+const sortBy = document.getElementById('sortBy');
+const countInfo = document.getElementById('countInfo');
+
+document.getElementById('addBtn').addEventListener('click', ()=>{
+  openModal('add');
+});
+document.getElementById('seedBtn').addEventListener('click', ()=>{
+  if(confirm('Replace all student data with sample records?')) seedSample();
+});
+document.getElementById('exportCsv').addEventListener('click', exportCSV);
+
+searchInput.addEventListener('input', renderTable);
+deptFilter.addEventListener('change', renderTable);
+sortBy.addEventListener('change', renderTable);
+
+// modal wiring
+const modal = document.getElementById('modal');
+const modalTitle = document.getElementById('modalTitle');
+const studentForm = document.getElementById('studentForm');
+const cancelBtn = document.getElementById('cancelBtn');
+const saveBtn = document.getElementById('saveBtn');
+
+let editingId = null;
+
+function openModal(mode, data){
+  editingId = null;
+  studentForm.reset();
+  if(mode === 'add'){
+    modalTitle.textContent = 'Add Student';
+    saveBtn.textContent = 'Create';
+  } else {
+    modalTitle.textContent = 'Edit Student';
+    saveBtn.textContent = 'Update';
+    // populate
+    document.getElementById('s_name').value = data.name || '';
+    document.getElementById('s_roll').value = data.roll || '';
+    document.getElementById('s_dept').value = data.dept || 'CSE';
+    document.getElementById('s_email').value = data.email || '';
+    document.getElementById('s_phone').value = data.phone || '';
+    document.getElementById('s_year').value = data.year || new Date().getFullYear();
+    editingId = data.id;
+  }
+  modal.style.display = 'flex';
+  document.getElementById('s_name').focus();
+}
+
+cancelBtn.addEventListener('click', ()=> modal.style.display = 'none');
+window.addEventListener('click', (e)=> { if(e.target === modal) modal.style.display = 'none'; });
+
+studentForm.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const s = {
+    id: editingId || genId(),
+    name: document.getElementById('s_name').value.trim(),
+    roll: document.getElementById('s_roll').value.trim(),
+    dept: document.getElementById('s_dept').value,
+    email: document.getElementById('s_email').value.trim(),
+    phone: document.getElementById('s_phone').value.trim(),
+    year: Number(document.getElementById('s_year').value) || new Date().getFullYear()
+  };
+
+  // validation
+  if(!s.name || !s.roll || !s.email){
+    alert('Name, Roll and Email are required.');
+    return;
+  }
+
+  // duplicate roll prevention (unless editing same record)
+  const dup = students.find(x => x.roll.toLowerCase() === s.roll.toLowerCase() && x.id !== s.id);
+  if(dup){
+    alert('Another student with same roll number exists.');
+    return;
+  }
+
+  if(editingId){
+    // update
+    students = students.map(x => x.id === s.id ? s : x);
+  } else {
+    // add
+    students.unshift(s); // newest first
+  }
+
+  saveAndRender();
+  modal.style.display = 'none';
+});
+
+// ---------- render table ----------
+function renderTable(){
+  const q = searchInput.value.trim().toLowerCase();
+  const dept = deptFilter.value;
+  let list = students.slice();
+
+  // filter
+  if(dept) list = list.filter(s => s.dept === dept);
+  if(q) list = list.filter(s => (s.name + ' ' + s.roll + ' ' + s.email + ' ' + (s.phone||'')).toLowerCase().includes(q));
+
+  // sort
+  const key = sortBy.value || 'name';
+  list.sort((a,b)=> {
+    const A = String(a[key]||'').toLowerCase();
+    const B = String(b[key]||'').toLowerCase();
+    if(A < B) return -1;
+    if(A > B) return 1;
+    return 0;
+  });
+
+  // show count
+  countInfo.textContent = `${list.length} record${list.length !== 1 ? 's' : ''}`;
+
+  // render
+  tbody.innerHTML = '';
+  if(list.length === 0){
+    emptyState.style.display = 'block';
+    return;
+  } else {
+    emptyState.style.display = 'none';
+  }
+
+  list.forEach(s => {
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td><div style="font-weight:700">${escapeHtml(s.name)}</div><div class="small">${escapeHtml(s.email)}</div></td>
+      <td>${escapeHtml(s.roll)}</td>
+      <td>${escapeHtml(s.dept)}</td>
+      <td>${escapeHtml(s.email)}</td>
+      <td>${escapeHtml(String(s.year))}</td>
+      <td class="actions">
+        <button class="tbtn" data-id="${s.id}" data-action="view">👁️</button>
+        <button class="tbtn" data-id="${s.id}" data-action="edit">✏️</button>
+        <button class="tbtn" data-id="${s.id}" data-action="del">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // delegate actions
+  tbody.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', (ev)=>{
+      const id = btn.getAttribute('data-id');
+      const action = btn.getAttribute('data-action');
+      const rec = students.find(x=>x.id === id);
+      if(!rec) return;
+      if(action === 'view'){
+        openView(rec);
+      } else if(action === 'edit'){
+        openModal('edit', rec);
+      } else if(action === 'del'){
+        if(confirm(`Delete ${rec.name} (${rec.roll})? This cannot be undone.`)){
+          students = students.filter(x=>x.id !== id);
+          saveAndRender();
+        }
+      }
+    });
+  });
+}
+
+// simple view popup
+function openView(rec){
+  const content = `
+    <div style="padding:12px">
+      <h3 style="margin:0 0 6px">${escapeHtml(rec.name)}</h3>
+      <div class="small">${escapeHtml(rec.dept)} • Roll: ${escapeHtml(rec.roll)}</div>
+      <div style="margin-top:8px"><strong>Email:</strong> ${escapeHtml(rec.email)}</div>
+      <div><strong>Phone:</strong> ${escapeHtml(rec.phone||'—')}</div>
+      <div><strong>Graduation Year:</strong> ${escapeHtml(String(rec.year))}</div>
+      <div style="margin-top:12px;text-align:right"><button class="tbtn" id="closeView">Close</button></div>
+    </div>
+  `;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal';
+  overlay.style.display = 'flex';
+  overlay.innerHTML = `<div class="dialog">${content}</div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', (e)=> { if(e.target === overlay) overlay.remove(); });
+  overlay.querySelector('#closeView').addEventListener('click', ()=> overlay.remove());
+}
+
+// CSV export
+function exportCSV(){
+  const rows = [['Name','Roll','Department','Email','Phone','Year']];
+  students.forEach(s => rows.push([s.name,s.roll,s.dept,s.email,s.phone || '',s.year]));
+  const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'students.csv';
+  document.body.appendChild(a); a.click();
+  a.remove(); URL.revokeObjectURL(url);
+}
+
+// util
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+// seed button
+document.getElementById('seedBtn').addEventListener('click', ()=> {
+  if(confirm('Replace current students with sample data?')) seedSample();
+});
+
+// initial render
+renderTable();
+
+</script>
+</body>
+</html>
