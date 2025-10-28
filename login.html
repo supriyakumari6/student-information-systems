@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>• Smart Campus Auth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F9FAFB;--panel:#FFFFFF;--text:#111827;--muted:#6B7280;--primary:#2563EB;--secondary:#10B981;--accent:#F59E0B;--r:18px}
+html.dark{--bg:#0F172A;--panel:#111827;--text:#F3F4F6;--muted:#9CA3AF;--primary:#3B82F6;--secondary:#34D399;--accent:#FBBF24}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+.container{display:grid;min-height:100vh;place-items:center;padding:24px}
+.card{background:rgba(255,255,255,.7);backdrop-filter:blur(12px);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.08);width:min(520px,92vw);transition:.4s}
+html.dark .card{background:rgba(17,24,39,.6);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #E5E7EB;background:#fff;margin:6px 0}
+html.dark input,html.dark select{background:#0b1220;border-color:#1f2937;color:#e5e7eb}
+.btn{padding:10px 12px;border-radius:12px;border:0;font-weight:700;cursor:pointer}
+.btn-gradient{background:linear-gradient(90deg,var(--primary),var(--secondary));color:#fff}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{flex:1;padding:10px 12px;text-align:center;border-radius:12px;cursor:pointer;font-weight:700;background:var(--panel);border:1px solid rgba(0,0,0,.1)}
+.tab.active{background:linear-gradient(90deg,var(--primary),var(--secondary));color:#fff;border:0}
+.top{position:fixed;right:16px;top:16px}
+.tbtn{padding:10px 12px;border-radius:12px;border:1px solid #E5E7EB;background:#fff;cursor:pointer}
+html.dark .tbtn{background:#0b1220;border-color:#1f2937;color:#e5e7eb}
+.error{color:#ef4444;font-size:13px;margin-top:4px}
+.success{color:#22c55e;font-size:13px;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="top"><button class="tbtn" onclick="toggleTheme()">🌗 Theme</button></div>
+<main class="container">
+  <section class="card" id="authCard">
+    <div class="tabs">
+      <div class="tab active" id="loginTab" onclick="switchTab('login')">Login</div>
+      <div class="tab" id="signupTab" onclick="switchTab('signup')">Sign Up</div>
+    </div>
+    <form id="loginForm">
+      <label>Role</label>
+      <select id="loginRole"><option>Student</option><option>Faculty</option><option>Admin</option></select>
+      <label>Email</label><input type="email" id="loginEmail" placeholder="you@uni.edu" required>
+      <label>Password</label><input type="password" id="loginPass" placeholder="••••••••" required>
+      <button class="btn btn-gradient" type="submit">Login</button>
+      <p id="loginMsg" class="error"></p>
+    </form>
+    <form id="signupForm" style="display:none">
+      <label>Full Name</label><input type="text" id="signupName" placeholder="Your Name" required>
+      <label>Role</label>
+      <select id="signupRole"><option>Student</option><option>Faculty</option><option>Admin</option></select>
+      <label>Email</label><input type="email" id="signupEmail" placeholder="you@uni.edu" required>
+      <label>Password</label><input type="password" id="signupPass" placeholder="Create password" required>
+      <button class="btn btn-gradient" type="submit">Create Account</button>
+      <p id="signupMsg" class="success"></p>
+    </form>
+  </section>
+</main>
+
+<script>
+// Theme toggle
+function toggleTheme(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+}
+if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');}
+
+// Tab switch
+function switchTab(tab){
+  document.getElementById('loginForm').style.display = tab==='login'?'block':'none';
+  document.getElementById('signupForm').style.display = tab==='signup'?'block':'none';
+  document.getElementById('loginTab').classList.toggle('active',tab==='login');
+  document.getElementById('signupTab').classList.toggle('active',tab==='signup');
+}
+
+// Sign up
+document.getElementById('signupForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const name=document.getElementById('signupName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const pass=document.getElementById('signupPass').value.trim();
+  const role=document.getElementById('signupRole').value;
+  if(!email||!pass){return;}
+  const users=JSON.parse(localStorage.getItem('users')||'[]');
+  if(users.find(u=>u.email===email)){
+    document.getElementById('signupMsg').textContent='Account already exists.';
+    document.getElementById('signupMsg').className='error';
+    return;
+  }
+  users.push({name,email,pass,role});
+  localStorage.setItem('users',JSON.stringify(users));
+  document.getElementById('signupMsg').textContent='Account created successfully!';
+  document.getElementById('signupMsg').className='success';
+  e.target.reset();
+});
+
+// Login
+document.getElementById('loginForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value.trim();
+  const role=document.getElementById('loginRole').value;
+  const users=JSON.parse(localStorage.getItem('users')||'[]');
+  const user=users.find(u=>u.email===email&&u.pass===pass&&u.role===role);
+  if(!user){
+    document.getElementById('loginMsg').textContent='Invalid credentials. Try again.';
+    return;
+  }
+  localStorage.setItem('currentUser',JSON.stringify(user));
+  localStorage.setItem('isLoggedIn','true');
+  location.href='dashboard.html';
+});
+
+// Auto redirect if already logged in
+if(localStorage.getItem('isLoggedIn')==='true'){
+  location.href='dashboard.html';
+}
+</script>
+</body>
+</html>
